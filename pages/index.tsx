@@ -69,7 +69,6 @@ export default function Home() {
             </h2>
             <p>
               Find in-depth information about Next.js features and&nbsp;API.
-              change
             </p>
           </a>
 
