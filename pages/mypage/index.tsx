@@ -5,7 +5,7 @@ import Image from 'next/image';
 import DiscordIcon from '@/public/icons/Discord.svg';
 import TwitterIcon from '@/public/icons/Twitter.svg';
 import Aptos from '@/public/icons/Aptos.svg';
-
+import { truncateAddress } from '@/utils/utils';
 enum Networks {
   aptos = 'APTOS',
 }
@@ -195,10 +195,6 @@ const ReceiveSelector = styled.div`
   text-align: left;
 `;
 
-function getAbbrAddress(address: string) {
-  return address.slice(0, 6) + '...' + address.slice(-6);
-}
-
 function WalletAccount({
   isReceiveWallet,
   address,
@@ -207,7 +203,7 @@ function WalletAccount({
   return (
     <WalletInfo>
       <Aptos />
-      <WalletAddress>{getAbbrAddress(address)}</WalletAddress>
+      <WalletAddress>{truncateAddress(address)}</WalletAddress>
       {isReceiveWallet && <ReceiveSelector>Receive Wallet</ReceiveSelector>}
       {!isReceiveWallet && (
         <DisconnectButton>Set Receive Wallet</DisconnectButton>
