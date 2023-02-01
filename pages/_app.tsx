@@ -14,15 +14,18 @@ export default function App({ Component, pageProps }: AppProps) {
   };
 
   return (
-    <Layout changeTheme={changeTheme}>
-      <Head>
-        <title>NOIS Club</title>
-        <meta name="description" content="Welcome to the NOIS Club" />
-        <meta name="viewport" content="width=device-width, initial-scale=1" />
-        <link rel="icon" href="/favicon.ico" />
-      </Head>
+    <>
+      <Layout changeTheme={changeTheme}>
+        <Head>
+          <title>Genie</title>
+          <meta name="description" content="Genie: aptos magic" />
+          <meta name="viewport" content="width=device-width, initial-scale=1" />
+          <link rel="icon" href="/favicon.ico" />
+        </Head>
 
-      <Component {...pageProps} />
-    </Layout>
+        <Component {...pageProps} />
+      </Layout>
+      <div id="modal-root"></div>
+    </>
   );
 }
