@@ -4,7 +4,9 @@ import Image from 'next/image';
 import { useEffect } from 'react';
 import sendProfile1 from '@/public/images/sendProfile1.png';
 import sendProfile2 from '@/public/images/sendProfile2.png';
-
+import { useState } from 'react';
+import { AptosCoinModal } from '@/components/Common/Modal';
+import CoinAptos from '@/public/icons/CoinAptos.svg';
 interface StaticImageData {
   src: string;
   height: number;
@@ -21,6 +23,10 @@ declare type StaticImport = StaticRequire | StaticImageData;
 interface ProfileProps {
   imgSource: string | StaticImport;
   children: string;
+}
+
+interface ButtonProps {
+  disabled?: boolean;
 }
 
 const ContentContainer = styled.div`
@@ -147,6 +153,39 @@ const TransactionDetailValue2 = styled.div`
   color: #a1a1a1;
 `;
 
+const InteractionButton = styled.button<ButtonProps>`
+  display: flex;
+  flex-direction: row;
+  justify-content: center;
+  align-items: center;
+  padding: 8px 12px;
+  gap: 10px;
+
+  width: 100%;
+  height: 44px;
+
+  font-weight: 400;
+  font-size: 16px;
+  line-height: 24px;
+
+  background: #5200ff;
+  color: #ffffff;
+  cursor: pointer;
+
+  &:disabled {
+    background: #a1a1a1;
+    color: #000000;
+    cursor: not-allowed;
+  }
+
+  &:connected {
+    border: 2px solid #5200ff;
+    border-radius: 8px;
+  }
+
+  border-radius: 8px;
+`;
+
 function Profile({ imgSource, children }: ProfileProps) {
   return (
     <Column>
@@ -158,12 +197,26 @@ function Profile({ imgSource, children }: ProfileProps) {
   );
 }
 
-function Balance() {
-  return <Column></Column>;
+const StyledColumn = styled(Column)`
+  color: white;
+  transition: 0.5s;
+  &:hover {
+    color: #5200ff;
+  }
+`;
+
+function Balance({ onClick = () => {} }) {
+  return (
+    <StyledColumn onClick={onClick} style={{ cursor: 'pointer' }}>
+      <CoinAptos fill="currentColor" />
+      <div>balance</div>
+    </StyledColumn>
+  );
 }
 
 export default function Coin() {
   const { connect, address, account } = useAptos();
+  const [modalShow, setModalShow] = useState<boolean>(false);
 
   useEffect(() => {
     connect();
@@ -176,38 +229,58 @@ export default function Coin() {
       <SummaryBox>
         <Profile imgSource={sendProfile1}>LeafCat#4774</Profile>
         <DottedLine />
+        <Balance
+          onClick={() => {
+            setModalShow(true);
+          }}
+        ></Balance>
+        <DottedLine />
         <Profile imgSource={sendProfile2}>b_loved_deok#0001</Profile>
       </SummaryBox>
 
       <TransactionBox>
         <TransactionTitle>Transaction Detail</TransactionTitle>
-        <Row>
-          <TransactionDetailKey>From</TransactionDetailKey>
-          <TransactionDetailValue1>LeafCat#4744</TransactionDetailValue1>
-          <TransactionDetailValue2>
-            Connect your wallet first
-          </TransactionDetailValue2>
-        </Row>
-        <Row>
-          <TransactionDetailKey>To</TransactionDetailKey>
-          <TransactionDetailValue1>b_loved_deok#0001</TransactionDetailValue1>
-          <TransactionDetailValue2>0x5c...48a7</TransactionDetailValue2>
-        </Row>
-        <Row>
-          <TransactionDetailKey>Value</TransactionDetailKey>
-          <TransactionDetailValue1>{15.5} APT</TransactionDetailValue1>
-          <TransactionDetailValue2>
-            Connect your wallet first
-          </TransactionDetailValue2>
-        </Row>
+        <Column>
+          <Row>
+            <TransactionDetailKey>From</TransactionDetailKey>
+            <TransactionDetailValue1>LeafCat#4744</TransactionDetailValue1>
+            <TransactionDetailValue2>
+              Connect your wallet first
+            </TransactionDetailValue2>
+          </Row>
+          <Row>
+            <TransactionDetailKey>To</TransactionDetailKey>
+            <TransactionDetailValue1>b_loved_deok#0001</TransactionDetailValue1>
+            <TransactionDetailValue2>0x5c...48a7</TransactionDetailValue2>
+          </Row>
+          <Row>
+            <TransactionDetailKey>Value</TransactionDetailKey>
+            <TransactionDetailValue1>{15.5} APT</TransactionDetailValue1>
+            <TransactionDetailValue2>
+              Connect your wallet first
+            </TransactionDetailValue2>
+          </Row>
+        </Column>
+        <Column style={{ marginTop: 'auto' }}>
+          <InteractionButton>Connect Aptos Wallet</InteractionButton>
+          <InteractionButton disabled={true}>Send</InteractionButton>
+        </Column>
       </TransactionBox>
-
+      {/* 
       <DebugText>address: {address}</DebugText>
       <DebugText>
         account.authentication_key: {account?.authentication_key}
       </DebugText>
       <DebugText>account.sequence_number: {account?.sequence_number}</DebugText>
-      <DebugButton onClick={() => connect()}>conenct wallet</DebugButton>
+      <DebugButton onClick={() => connect()}>conenct wallet</DebugButton> */}
+      {modalShow && (
+        <AptosCoinModal
+          coinTransferInfo={{ from: '', to: '', coin: '', balance: '0' }}
+          onClose={() => {
+            setModalShow(false);
+          }}
+        ></AptosCoinModal>
+      )}
     </ContentContainer>
   );
 }
