@@ -1,5 +1,5 @@
 import styled from 'styled-components';
-import { useAptos } from '@/lib/useAptos';
+import { useAptos } from '@/lib/aptos';
 import Image from 'next/image';
 import { useEffect } from 'react';
 import sendProfile1 from '@/public/images/sendProfile1.png';

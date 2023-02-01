@@ -9,7 +9,12 @@
     "lint": "next lint"
   },
   "dependencies": {
+    "@aptos-labs/wallet-adapter-ant-design": "^0.1.1",
+    "@aptos-labs/wallet-adapter-core": "^0.2.3",
+    "@aptos-labs/wallet-adapter-react": "^0.2.3",
+    "@martianwallet/aptos-wallet-adapter": "^0.0.3",
     "@next/font": "13.1.5",
+    "@pontem/wallet-adapter-plugin": "^0.1.4",
     "@types/node": "18.11.18",
     "@types/react": "18.0.27",
     "@types/react-dom": "18.0.10",

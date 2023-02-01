@@ -24,6 +24,8 @@ type CoinTransferInfo = {
 interface AptosCoinModalProps {
   coinTransferInfo: CoinTransferInfo;
   onClose: () => void;
+  setAmount: (arg0: string) => void;
+  userBalance: string;
 }
 
 const CoinText = styled.div`
@@ -173,10 +175,12 @@ function CoinDropdown() {
 export const AptosCoinModal: React.FC<AptosCoinModalProps> = ({
   onClose,
   coinTransferInfo,
+  setAmount,
+  userBalance,
 }) => {
   const { from, to, coin, balance = 100 } = coinTransferInfo;
 
-  const [amount, setAmount] = useState(0);
+  const [inputValue, setInputValue] = useState('0');
 
   return (
     <Modal onClose={onClose}>
@@ -184,12 +188,21 @@ export const AptosCoinModal: React.FC<AptosCoinModalProps> = ({
       <Row>
         <CoinDropdown />
         <CoinAmountField>
-          <CoinAmountInput type="number" placeholder="1.0" />
+          <CoinAmountInput
+            type="number"
+            placeholder="1.0"
+            onChange={(e) => {
+              setInputValue(e.target.value.toString());
+            }}
+          />
           <CoinText>APT</CoinText>
         </CoinAmountField>
       </Row>
       <CoinBalanceText>
-        Balance: {balance.toLocaleString('ko-KR', { maximumFractionDigits: 4 })}{' '}
+        Balance:{' '}
+        {Number(userBalance).toLocaleString('ko-KR', {
+          maximumFractionDigits: 4,
+        })}{' '}
         APT
       </CoinBalanceText>
       <RowDivider />
@@ -199,6 +212,10 @@ export const AptosCoinModal: React.FC<AptosCoinModalProps> = ({
           style={{
             background: '#5200ff',
             color: 'white',
+          }}
+          onClick={() => {
+            setAmount(inputValue);
+            onClose();
           }}
         >
           Change Value
