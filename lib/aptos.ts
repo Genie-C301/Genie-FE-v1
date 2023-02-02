@@ -166,19 +166,19 @@ export default class Client {
 
   async fetchCoins(): Promise<{ coin_type: string; amount: number }[]> {
     const operationsDoc = `
-  query fetchCoins {
-    coin_balances(
-      where: {owner_address: {_eq: "${this.wallet.account?.address}"}}
-      limit: 1
-      order_by: {transaction_timestamp: desc}
-    ) {
-      amount
-      coin_type
-      owner_address
-      transaction_timestamp
-    }
-  }
-`;
+      query fetchCoins {
+        coin_balances(
+          where: {owner_address: {_eq: "${this.wallet.account?.address}"}}
+          limit: 1
+          order_by: {transaction_timestamp: desc}
+        ) {
+          amount
+          coin_type
+          owner_address
+          transaction_timestamp
+        }
+      }
+    `;
 
     const data = await this.fetchGraphQL(operationsDoc, 'fetchCoins', {});
 
