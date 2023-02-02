@@ -332,7 +332,7 @@ export default function SendCoin() {
         <Column style={{ marginTop: 'auto' }}>
           <WalletSelector />
           <InteractionButton
-            disabled={!connected}
+            disabled={!connected || amount == '0'}
             onClick={onSignAndSubmitTransaction}
           >
             Send
