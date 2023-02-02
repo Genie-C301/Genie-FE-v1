@@ -4,15 +4,17 @@ import { useEffect, useState } from 'react';
 import dynamic from 'next/dynamic';
 import { useWallet } from '@aptos-labs/wallet-adapter-react';
 import { AptosClient, Types } from 'aptos';
+import { useRouter } from 'next/router';
 import Client from '@/lib/aptos';
 import sendProfile1 from '@/public/images/sendProfile1.png';
 import sendProfile2 from '@/public/images/sendProfile2.png';
-import { AptosCoinModal } from '@/components/Common/Modal';
+import { AptosTokenModal } from '@/components/Common/Modal';
 import CoinAptos from '@/public/icons/CoinAptos.svg';
 import { WalletSelector } from '@/components/Aptos/WalletSelector';
 import { useAutoConnect } from '@/components/Aptos/AutoConnectProvider';
 import { truncateAddress } from '@/utils/utils';
 import { AppContext } from '@/components/Aptos/AppContext';
+import DiscordClient from '@/lib/discord';
 interface StaticImageData {
   src: string;
   height: number;
@@ -36,6 +38,7 @@ interface ButtonProps {
 }
 
 const ContentContainer = styled.div`
+  min-height: calc(100vh - 200px);
   width: 440px;
   margin: 40px auto;
   align-items: center;
@@ -121,7 +124,7 @@ const TransactionBox = styled.div`
   gap: 12px;
 
   width: 440px;
-  height: 324px;
+  height: 370px;
 
   border: 1px solid #ffffff;
   border-radius: 8px;
@@ -228,7 +231,19 @@ const aptosClient = new AptosClient(DEVNET_NODE_URL, {
   WITH_CREDENTIALS: false,
 });
 
+const TokenImage = styled.div`
+  width: 40px;
+  height: 40px;
+
+  border-radius: 36px;
+
+  overflow: hidden;
+`;
+
 export default function SendToken() {
+  const router = useRouter();
+  const { fromId, toId } = router.query;
+
   const [modalShow, setModalShow] = useState<boolean>(false);
   const walletContext = useWallet();
 
@@ -244,56 +259,82 @@ export default function SendToken() {
     signMessageAndVerify,
   } = walletContext;
 
+  const [userData, setUserData] = useState<any>();
+  const [receiverData, setReceiverData] = useState<any>();
+
   const { autoConnect, setAutoConnect } = useAutoConnect();
   const [successAlertMessage, setSuccessAlertMessage] = useState<string>('');
   const [errorAlertMessage, setErrorAlertMessage] = useState<string>('');
 
-  const [amount, setAmount] = useState('0');
-  const [userBalance, setUserBalance] = useState('0');
-  const [toAddress, setToAddress] = useState('');
+  const [token, setToken] = useState<any | null>();
 
   const client = new Client(walletContext);
+  const discordClient = new DiscordClient();
 
   const onSignAndSubmitTransaction = async () => {
-    const res = await client.transferApt(
-      '0.01',
-      //TODO amount
-      '0xb30d58ea44961e0d004fa0d7df0459eb2cacfbbe32545dce923048360c518f58',
+    console.log('sending transaction');
+    if (!token) return;
+    const res = await client.optInAndTransferToken(
+      'bc41c4f8f3c9654b4293d8913168bbf9a10a8272c4daaf776a16d7c0aff23436',
       //TODO toAddress
+      token.creator,
+      token.collection,
+      token.name,
     );
     console.log(res.msg);
     alert(res.msg);
-    fetchCoins();
   };
-  const fetchCoins = async () => {
-    const coins = await client.fetchCoins();
-    setUserBalance(client.format(coins[0]?.amount.toString(), 8));
+
+  const fetchUserData = async () => {
+    // getSomethingHere,
+    // console.log(String(fromId));
+    const res1 = await discordClient.fetchuserInfo(String(fromId));
+    const res2 = await discordClient.fetchuserInfo(String(toId));
+    setUserData(res1);
+    setReceiverData(res2);
   };
 
   useEffect(() => {
-    console.log(walletContext);
-    if (wallet) {
-      fetchCoins();
-    }
-  }, [account]);
+    if (fromId && toId) fetchUserData();
+  }, [fromId, toId]);
+
+  // useEffect(() => {
+  //   console.log(walletContext);
+  //   if (wallet) {
+  //   }
+  // }, [account]);
 
   //TODO setToAddress with backend
   useEffect(() => {}, []);
 
   return (
     <ContentContainer>
-      <Title>Send Token(coin)</Title>
+      <Title>Send NFT(token)</Title>
 
       <SummaryBox>
-        <Profile imgSource={sendProfile1}>LeafCat#4774</Profile>
+        <Profile imgSource={userData?.avatar}>
+          {userData?.name + '#' + userData?.discriminator}
+        </Profile>{' '}
         <DottedLine />
-        <Balance
-          onClick={() => {
-            if (connected) setModalShow(true);
-          }}
-        ></Balance>
+        <Column>
+          {token ? (
+            <TokenImage>
+              <Image
+                width={40}
+                height={40}
+                src={token?.uri}
+                alt="Selected Token Image"
+              ></Image>
+            </TokenImage>
+          ) : (
+            'Select NFT'
+          )}
+          <div>{token?.name}</div>
+        </Column>
         <DottedLine />
-        <Profile imgSource={sendProfile2}>b_loved_deok#0001</Profile>
+        <Profile imgSource={receiverData?.avatar}>
+          {receiverData?.name + '#' + receiverData?.discriminator}
+        </Profile>{' '}
       </SummaryBox>
 
       <TransactionBox>
@@ -301,7 +342,9 @@ export default function SendToken() {
         <Column>
           <Row>
             <TransactionDetailKey>From</TransactionDetailKey>
-            <TransactionDetailValue1>LeafCat#4744</TransactionDetailValue1>
+            <TransactionDetailValue1>
+              {userData?.name + '#' + userData?.discriminator}
+            </TransactionDetailValue1>
             <TransactionDetailValue2>
               {connected
                 ? truncateAddress(account?.address)
@@ -310,23 +353,26 @@ export default function SendToken() {
           </Row>
           <Row>
             <TransactionDetailKey>To</TransactionDetailKey>
-            <TransactionDetailValue1>b_loved_deok#0001</TransactionDetailValue1>
-            <TransactionDetailValue2>0x5c...48a7</TransactionDetailValue2>
+            <TransactionDetailValue1>
+              {receiverData?.name + '#' + receiverData?.discriminator}
+            </TransactionDetailValue1>
+            <TransactionDetailValue2>Inbox</TransactionDetailValue2>
           </Row>
           <Row>
-            <TransactionDetailKey>Value</TransactionDetailKey>
-            <TransactionDetailValue1>{amount} APT</TransactionDetailValue1>
-            <TransactionDetailValue2>
-              {connected
-                ? `${Number(userBalance).toLocaleString('en-US', {
-                    maximumFractionDigits: 4,
-                  })} APT`
-                : 'Connect your wallet first'}
-            </TransactionDetailValue2>
+            <TransactionDetailKey>NFT</TransactionDetailKey>
+            <TransactionDetailValue1>{token?.name}</TransactionDetailValue1>
           </Row>
         </Column>
         <Column style={{ marginTop: 'auto' }}>
           <WalletSelector />
+          <InteractionButton
+            disabled={!connected}
+            onClick={() => {
+              setModalShow(true);
+            }}
+          >
+            Select NFT
+          </InteractionButton>
           <InteractionButton
             disabled={!connected}
             onClick={onSignAndSubmitTransaction}
@@ -335,22 +381,15 @@ export default function SendToken() {
           </InteractionButton>
         </Column>
       </TransactionBox>
-      {/* 
-      <DebugText>address: {address}</DebugText>
-      <DebugText>
-        account.authentication_key: {account?.authentication_key}
-      </DebugText>
-      <DebugText>account.sequence_number: {account?.sequence_number}</DebugText>
-      <DebugButton onClick={() => connect()}>conenct wallet</DebugButton> */}
+
       {modalShow && (
-        <AptosCoinModal
-          coinTransferInfo={{ from: '', to: '', coin: '', balance: '0' }}
+        <AptosTokenModal
           onClose={() => {
             setModalShow(false);
           }}
-          userBalance={userBalance}
-          setAmount={setAmount}
-        ></AptosCoinModal>
+          userAddress={String(account?.address)}
+          setToken={setToken}
+        ></AptosTokenModal>
       )}
     </ContentContainer>
   );

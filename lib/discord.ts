@@ -1,27 +1,27 @@
 export interface UserData {
-  userName: string;
-  profileImgUrl: string;
-  walletAddresses: string[];
+  name: string;
+  discriminator: string;
+  avatar: string;
+  wallet: string;
+  aptosWallets: string[];
 }
 
 export default class DiscordClient {
   BE_END_POINT: string;
 
-  constructor(endpoint: string) {
-    this.BE_END_POINT = endpoint;
+  constructor() {
+    this.BE_END_POINT = 'https://geniehot.link/graphql/';
   }
 
-  async fetchGraphQL(
-    operationsDoc: string,
-    operationName: string,
-    variables: any,
-  ) {
+  async fetchGraphQL(operationsDoc: string, variables: any) {
     const result = await fetch(this.BE_END_POINT, {
+      headers: {
+        'Content-Type': 'application/json',
+      },
       method: 'POST',
       body: JSON.stringify({
         query: operationsDoc,
         variables: variables,
-        operationName: operationName,
       }),
     });
 
@@ -29,37 +29,48 @@ export default class DiscordClient {
   }
 
   //query profile (discordId -> ATIV#9432, profileImgUrl, walletAddress)
-  async fetchUserProfile(discordId: string): Promise<UserData> {
+  async fetchuserInfo(discordId: string): Promise<UserData> {
+    console.log('discordId :', discordId);
     const graphqlQuery = `
-      query fetchUser {
-        user(
-          discordId: ${discordId}
-        ) {
-          userName
-          profileImg
-          walletAddresses
+      query GetUser($discordId :String!) {
+        userInfo(discordId: $discordId) {
+          name
+          discriminator
+          avatar
+          aptosWallets {
+            address
+          }
         }
       }
     `;
+    const variables = {
+      discordId: discordId,
+    };
 
-    const data = await this.fetchGraphQL(graphqlQuery, 'fetchUser', {});
+    const data = await this.fetchGraphQL(graphqlQuery, variables);
 
-    return data.data;
+    return data.data.userInfo;
   }
 
   //mutation verify (discordId -> walletAddress)
-  async verifyWallet(discordId: string, walletaddress: string) {
-    const graphqlQuery = `
-      mutation verifyWallet {
-        user(
-          discordId: ${discordId}
-          walletAddress: ${walletaddress}
-        ) {
+  async verifyUser(discordId: string, walletAddress: string) {
+    const graphqlMutation = `
+      mutation VerifyUser($discordId :String!, $walletAddress: String!) {
+        verifyUser(discordId: $discordId, walletAddress: $walletAddress) {
           success
         }
       }
     `;
 
-    const data = await this.fetchGraphQL(graphqlQuery, 'fetchUser', {});
+    console.log('inside', discordId, walletAddress);
+
+    const variables = {
+      discordId,
+      walletAddress,
+    };
+
+    const data = await this.fetchGraphQL(graphqlMutation, variables);
+    console.log('data', data);
+    return data;
   }
 }

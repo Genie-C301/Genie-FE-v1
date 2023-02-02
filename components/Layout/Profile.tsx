@@ -2,10 +2,13 @@ import styled, { useTheme } from 'styled-components';
 import { useContext, useState } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
+import { useRouter } from 'next/router';
+import { useEffect } from 'react';
 import DiscordIcon from '@/public/icons/Discord.svg';
 import ProfileImage from '@/public/images/ProfileImg.png';
 import UserIcon from '@/public/icons/User.svg';
 import LogoutIcon from '@/public/icons/Logout.svg';
+import DiscordClient from '@/lib/discord';
 
 interface ProfileProps {}
 
@@ -95,26 +98,37 @@ const DiscordProfile = styled(ProfileButtonStyle)`
 // onClick => Profile Dropdown
 
 export const Profile = ({}: ProfileProps) => {
-  // before discord login
-  // return (
-  //   <DiscordLogin>
-  //     <DiscordIcon />
-  //     Discord Login
-  //   </DiscordLogin>
-  // );
+  const router = useRouter();
 
+  const { fromId } = router.query;
+
+  const [userData, setUserData] = useState<any>();
+
+  const discordClient = new DiscordClient();
+
+  const fetchUserData = async () => {
+    // getSomethingHere,
+    // console.log(String(fromId));
+    const res = await discordClient.fetchuserInfo(String(fromId));
+    console.log(res);
+    setUserData(res);
+  };
+
+  useEffect(() => {
+    if (fromId) fetchUserData();
+  }, [fromId]);
   // if logged in
   return (
     <DiscordProfile>
       <Image
         width={24}
         height={24}
-        src={ProfileImage}
+        src={userData?.avatar}
         alt={'Discord Profile Image'}
       />
-      LeafCat#4744
+      {userData?.name + '#' + userData?.discriminator}
       <DropdownContainer>
-        <Link href={'/mypage'}>
+        <Link href={`/mypage?fromId=${fromId}`}>
           <DropdownElement>
             <UserIcon fill="currentColor" />
             Edit Profile / Wallet

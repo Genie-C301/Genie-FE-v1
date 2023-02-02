@@ -1,6 +1,7 @@
 import styled, { useTheme } from 'styled-components';
 import { useState } from 'react';
 import Link from 'next/link';
+import { useRouter } from 'next/router';
 import GenieLogo from '@/public/images/GenieLogo.svg';
 
 import { Profile } from '@/components/Layout/Profile';
@@ -44,15 +45,22 @@ const HeaderRouteButton = styled(Link)`
 `;
 
 export const Header = ({}: HeaderProps) => {
+  const router = useRouter();
+  const { fromId } = router.query;
+
   return (
     <HeaderContainer>
       <Link href={'/'}>
         <GenieLogo />
       </Link>
       <HeaderRouteContainer>
-        <HeaderRouteButton href={'/documents'}>Documents</HeaderRouteButton>
-        <HeaderRouteButton href={'/dashboard'}>Dashboard</HeaderRouteButton>
-        <HeaderRouteButton href={'/inbox'}>Inbox</HeaderRouteButton>
+        <HeaderRouteButton href={`/documents?fromId=${fromId}`}>
+          Documents
+        </HeaderRouteButton>
+        <HeaderRouteButton href={`/dashboard?fromId=${fromId}`}>
+          Dashboard
+        </HeaderRouteButton>
+        {/* <HeaderRouteButton href={'/inbox'}>Inbox</HeaderRouteButton> */}
         {/* <HeaderRouteButton href={'/mypage'}>MyPage</HeaderRouteButton> */}
       </HeaderRouteContainer>
       <Profile />
