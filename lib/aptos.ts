@@ -1,12 +1,12 @@
-import { AptosClient as Aptos, Types, HexString, AptosAccount } from 'aptos';
+import { AptosClient as Aptos, AptosAccount, HexString, Types } from 'aptos';
 import {
   AccountInfo,
   NetworkInfo,
-  WalletName,
-  WalletInfo,
-  Wallet,
   SignMessagePayload,
   SignMessageResponse,
+  Wallet,
+  WalletInfo,
+  WalletName,
 } from '@aptos-labs/wallet-adapter-core';
 import { getErrorMessage } from './error';
 

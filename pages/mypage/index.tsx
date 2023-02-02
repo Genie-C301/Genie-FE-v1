@@ -1,11 +1,15 @@
 import styled from 'styled-components';
-import ProfileImage from '@/public/images/ProfileImg.png';
 import Image from 'next/image';
-
+import { useRouter } from 'next/router';
+import { useEffect } from 'react';
+import { useWallet } from '@aptos-labs/wallet-adapter-react';
+import { truncateAddress } from '@/utils/utils';
+import Client from '@/lib/aptos';
+import ProfileImage from '@/public/images/ProfileImg.png';
+import Aptos from '@/public/icons/Aptos.svg';
 import DiscordIcon from '@/public/icons/Discord.svg';
 import TwitterIcon from '@/public/icons/Twitter.svg';
-import Aptos from '@/public/icons/Aptos.svg';
-import { truncateAddress } from '@/utils/utils';
+
 enum Networks {
   aptos = 'APTOS',
 }
@@ -237,6 +241,38 @@ const dummyWallets = [
 ];
 
 export default function MyPage() {
+  const router = useRouter();
+  const { fromId, autoVerify } = router.query;
+
+  const walletContext = useWallet();
+
+  const {
+    connected,
+    disconnect,
+    account,
+    network,
+    wallet,
+    signAndSubmitTransaction,
+    signTransaction,
+    signMessage,
+    signMessageAndVerify,
+  } = walletContext;
+
+  const client = new Client(walletContext);
+
+  const fetchUserData = async (fromId: string) => {
+    // getSomethingHere
+  };
+  useEffect(() => {
+    fetchUserData(String(fromId));
+  }, []);
+
+  useEffect(() => {
+    //TODO display
+    if (connected) {
+    }
+  }, [autoVerify]);
+
   return (
     <ContentContainer>
       <Title>Edit Profile / Wallet</Title>

@@ -1,8 +1,8 @@
 import styled, { useTheme } from 'styled-components';
-import { useState, useContext } from 'react';
+import { useContext, useState } from 'react';
 import Link from 'next/link';
-import DiscordIcon from '@/public/icons/Discord.svg';
 import Image from 'next/image';
+import DiscordIcon from '@/public/icons/Discord.svg';
 import ProfileImage from '@/public/images/ProfileImg.png';
 import UserIcon from '@/public/icons/User.svg';
 import LogoutIcon from '@/public/icons/Logout.svg';

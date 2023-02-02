@@ -1,10 +1,10 @@
 import styled from 'styled-components';
 import { useWallet } from '@aptos-labs/wallet-adapter-react';
+import { useEffect, useMemo, useState } from 'react';
 import { WalletSelector } from '@/components/Aptos/WalletSelector';
 import { Column } from '@/components/Common';
 import { truncateAddress } from '@/utils/utils';
 import Client from '@/lib/aptos';
-import { useEffect, useMemo, useState } from 'react';
 const ContentContainer = styled.div`
   min-height: calc(100vh - 200px);
   width: 920px;
@@ -57,6 +57,7 @@ export default function Dashboard() {
     const res = await client.accountTransactions();
 
     if (res.success) {
+      if (res.transactions === undefined) return;
       setTransactions(res?.transactions);
 
       console.log(res.transactions);

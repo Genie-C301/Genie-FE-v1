@@ -6,9 +6,9 @@ import {
   WalletReadyState,
 } from '@aptos-labs/wallet-adapter-react';
 // import './styles.css';
+import styled from 'styled-components';
 import { truncateAddress } from '@/utils/utils';
 import CoinAptos from '@/public/icons/CoinAptos.svg';
-import styled from 'styled-components';
 const { Text } = Typography;
 
 interface ButtonProps {

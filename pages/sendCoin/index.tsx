@@ -1,16 +1,17 @@
 import styled from 'styled-components';
 import Image from 'next/image';
-import { useState, useEffect } from 'react';
+import { useEffect, useState } from 'react';
+import dynamic from 'next/dynamic';
+import { useWallet } from '@aptos-labs/wallet-adapter-react';
+import { AptosClient, Types } from 'aptos';
+import { useRouter } from 'next/router';
 import Client from '@/lib/aptos';
 import sendProfile1 from '@/public/images/sendProfile1.png';
 import sendProfile2 from '@/public/images/sendProfile2.png';
-import dynamic from 'next/dynamic';
 import { AptosCoinModal } from '@/components/Common/Modal';
 import CoinAptos from '@/public/icons/CoinAptos.svg';
-import { useWallet } from '@aptos-labs/wallet-adapter-react';
 import { WalletSelector } from '@/components/Aptos/WalletSelector';
 import { useAutoConnect } from '@/components/Aptos/AutoConnectProvider';
-import { AptosClient, Types } from 'aptos';
 import { truncateAddress } from '@/utils/utils';
 import { AppContext } from '@/components/Aptos/AppContext';
 interface StaticImageData {
@@ -220,15 +221,16 @@ function Balance({ onClick = () => {} }) {
   );
 }
 
-const WalletButtons = dynamic(() => import('@/components/Aptos/WalletButtons'));
+export default function SendCoin() {
+  const router = useRouter();
+  const {
+    coin = 'aptos',
+    amount: queryAmount = '0',
+    fromId,
+    toId,
+    toAddress,
+  } = router.query;
 
-export const DEVNET_NODE_URL = 'https://fullnode.devnet.aptoslabs.com/v1';
-
-const aptosClient = new AptosClient(DEVNET_NODE_URL, {
-  WITH_CREDENTIALS: false,
-});
-
-export default function Coin() {
   const [modalShow, setModalShow] = useState<boolean>(false);
   const walletContext = useWallet();
 
@@ -248,15 +250,15 @@ export default function Coin() {
   const [successAlertMessage, setSuccessAlertMessage] = useState<string>('');
   const [errorAlertMessage, setErrorAlertMessage] = useState<string>('');
 
-  const [amount, setAmount] = useState('0');
+  const [amount, setAmount] = useState(String(queryAmount));
   const [userBalance, setUserBalance] = useState('0');
-  const [toAddress, setToAddress] = useState('');
+  // const [toAddress, setToAddress] = useState('');
 
   const client = new Client(walletContext);
 
   const onSignAndSubmitTransaction = async () => {
     const res = await client.transferApt(
-      '0.01',
+      amount,
       //TODO amount
       '0xb30d58ea44961e0d004fa0d7df0459eb2cacfbbe32545dce923048360c518f58',
       //TODO toAddress
@@ -285,7 +287,7 @@ export default function Coin() {
       <Title>Send Token(coin)</Title>
 
       <SummaryBox>
-        <Profile imgSource={sendProfile1}>LeafCat#4774</Profile>
+        <Profile imgSource={sendProfile1}>{String(fromId)}</Profile>
         <DottedLine />
         <Balance
           onClick={() => {
@@ -293,7 +295,7 @@ export default function Coin() {
           }}
         ></Balance>
         <DottedLine />
-        <Profile imgSource={sendProfile2}>b_loved_deok#0001</Profile>
+        <Profile imgSource={sendProfile2}>{String(toId)}</Profile>
       </SummaryBox>
 
       <TransactionBox>
@@ -301,7 +303,7 @@ export default function Coin() {
         <Column>
           <Row>
             <TransactionDetailKey>From</TransactionDetailKey>
-            <TransactionDetailValue1>LeafCat#4744</TransactionDetailValue1>
+            <TransactionDetailValue1>{String(fromId)}</TransactionDetailValue1>
             <TransactionDetailValue2>
               {connected
                 ? truncateAddress(account?.address)
@@ -310,8 +312,10 @@ export default function Coin() {
           </Row>
           <Row>
             <TransactionDetailKey>To</TransactionDetailKey>
-            <TransactionDetailValue1>b_loved_deok#0001</TransactionDetailValue1>
-            <TransactionDetailValue2>0x5c...48a7</TransactionDetailValue2>
+            <TransactionDetailValue1>{String(toId)}</TransactionDetailValue1>
+            <TransactionDetailValue2>
+              {truncateAddress(String(toAddress))}
+            </TransactionDetailValue2>
           </Row>
           <Row>
             <TransactionDetailKey>Value</TransactionDetailKey>

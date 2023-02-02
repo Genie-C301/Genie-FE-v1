@@ -2,7 +2,7 @@ import React, { ReactNode, useContext, useEffect, useState } from 'react';
 import Link from 'next/link';
 
 import styled from 'styled-components';
-import { Row, RowDivider, Portal } from '@/components/Common';
+import { Portal, Row, RowDivider } from '@/components/Common';
 import CoinAptos from '@/public/icons/AptosTicker.svg';
 import AngleDown from '@/public/icons/AngleDown.svg';
 interface ButtonProps {
