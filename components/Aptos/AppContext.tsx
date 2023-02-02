@@ -4,8 +4,8 @@ import {
   AptosWalletAdapterProvider,
   NetworkName,
 } from "@aptos-labs/wallet-adapter-react";
-import { AutoConnectProvider, useAutoConnect } from "./AutoConnectProvider";
 import { FC, ReactNode } from "react";
+import { AutoConnectProvider, useAutoConnect } from "./AutoConnectProvider";
 
 const WalletContextProvider: FC<{ children: ReactNode }> = ({ children }) => {
   const { autoConnect } = useAutoConnect();

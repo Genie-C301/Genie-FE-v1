@@ -1,16 +1,16 @@
 import styled from 'styled-components';
 import Image from 'next/image';
-import { useState, useEffect } from 'react';
+import { useEffect, useState } from 'react';
+import dynamic from 'next/dynamic';
+import { useWallet } from '@aptos-labs/wallet-adapter-react';
+import { AptosClient, Types } from 'aptos';
 import Client from '@/lib/aptos';
 import sendProfile1 from '@/public/images/sendProfile1.png';
 import sendProfile2 from '@/public/images/sendProfile2.png';
-import dynamic from 'next/dynamic';
 import { AptosCoinModal } from '@/components/Common/Modal';
 import CoinAptos from '@/public/icons/CoinAptos.svg';
-import { useWallet } from '@aptos-labs/wallet-adapter-react';
 import { WalletSelector } from '@/components/Aptos/WalletSelector';
 import { useAutoConnect } from '@/components/Aptos/AutoConnectProvider';
-import { AptosClient, Types } from 'aptos';
 import { truncateAddress } from '@/utils/utils';
 import { AppContext } from '@/components/Aptos/AppContext';
 interface StaticImageData {
@@ -220,7 +220,15 @@ function Balance({ onClick = () => {} }) {
   );
 }
 
-export default function Coin() {
+const WalletButtons = dynamic(() => import('@/components/Aptos/WalletButtons'));
+
+export const DEVNET_NODE_URL = 'https://fullnode.devnet.aptoslabs.com/v1';
+
+const aptosClient = new AptosClient(DEVNET_NODE_URL, {
+  WITH_CREDENTIALS: false,
+});
+
+export default function SendToken() {
   const [modalShow, setModalShow] = useState<boolean>(false);
   const walletContext = useWallet();
 
