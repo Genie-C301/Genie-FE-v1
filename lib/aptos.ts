@@ -74,6 +74,36 @@ export default class Client {
     );
   }
 
+  async accountTransactions() {
+    const accountAddress = this.wallet.account?.address;
+    try {
+      const data = await this.aptosClient.getAccountTransactions(
+        //@ts-ignore
+        accountAddress,
+      );
+      const transactions = data.map((item: { [key: string]: any }) => ({
+        data: item.payload,
+        from: item.sender,
+        gas: item.gas_used,
+        gasPrice: item.gas_unit_price,
+        hash: item.hash,
+        success: item.success,
+        timestamp: item.timestamp,
+        toAddress: item.payload.arguments[0],
+        price: item.payload.arguments[1],
+        type: item.type,
+        version: item.version,
+        vmStatus: item.vm_status,
+      }));
+      return { success: true, transactions };
+    } catch (err) {
+      return {
+        success: false,
+        err,
+      };
+    }
+  }
+
   async registerCoin(
     coinTypeAddress: HexString,
     coinReceiver: AptosAccount,

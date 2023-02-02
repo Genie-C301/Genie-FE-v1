@@ -1,12 +1,18 @@
 import styled from 'styled-components';
-import { useAptos } from '@/lib/aptos';
 import Image from 'next/image';
-import { useEffect } from 'react';
+import { useState, useEffect } from 'react';
+import Client from '@/lib/aptos';
 import sendProfile1 from '@/public/images/sendProfile1.png';
 import sendProfile2 from '@/public/images/sendProfile2.png';
-import { useState } from 'react';
+import dynamic from 'next/dynamic';
 import { AptosCoinModal } from '@/components/Common/Modal';
 import CoinAptos from '@/public/icons/CoinAptos.svg';
+import { useWallet } from '@aptos-labs/wallet-adapter-react';
+import { WalletSelector } from '@/components/Aptos/WalletSelector';
+import { useAutoConnect } from '@/components/Aptos/AutoConnectProvider';
+import { AptosClient, Types } from 'aptos';
+import { truncateAddress } from '@/utils/utils';
+import { AppContext } from '@/components/Aptos/AppContext';
 interface StaticImageData {
   src: string;
   height: number;
@@ -215,12 +221,56 @@ function Balance({ onClick = () => {} }) {
 }
 
 export default function Coin() {
-  const { connect, address, account } = useAptos();
   const [modalShow, setModalShow] = useState<boolean>(false);
+  const walletContext = useWallet();
+
+  const {
+    connected,
+    disconnect,
+    account,
+    network,
+    wallet,
+    signAndSubmitTransaction,
+    signTransaction,
+    signMessage,
+    signMessageAndVerify,
+  } = walletContext;
+
+  const { autoConnect, setAutoConnect } = useAutoConnect();
+  const [successAlertMessage, setSuccessAlertMessage] = useState<string>('');
+  const [errorAlertMessage, setErrorAlertMessage] = useState<string>('');
+
+  const [amount, setAmount] = useState('0');
+  const [userBalance, setUserBalance] = useState('0');
+  const [toAddress, setToAddress] = useState('');
+
+  const client = new Client(walletContext);
+
+  const onSignAndSubmitTransaction = async () => {
+    const res = await client.transferApt(
+      '0.01',
+      //TODO amount
+      '0xb30d58ea44961e0d004fa0d7df0459eb2cacfbbe32545dce923048360c518f58',
+      //TODO toAddress
+    );
+    console.log(res.msg);
+    alert(res.msg);
+    fetchCoins();
+  };
+  const fetchCoins = async () => {
+    const coins = await client.fetchCoins();
+    setUserBalance(client.format(coins[0]?.amount.toString(), 8));
+  };
 
   useEffect(() => {
-    connect();
-  }, []);
+    console.log(walletContext);
+    if (wallet) {
+      fetchCoins();
+    }
+  }, [account]);
+
+  //TODO setToAddress with backend
+  useEffect(() => {}, []);
 
   return (
     <ContentContainer>
@@ -231,7 +281,7 @@ export default function Coin() {
         <DottedLine />
         <Balance
           onClick={() => {
-            setModalShow(true);
+            if (connected) setModalShow(true);
           }}
         ></Balance>
         <DottedLine />
@@ -245,7 +295,9 @@ export default function Coin() {
             <TransactionDetailKey>From</TransactionDetailKey>
             <TransactionDetailValue1>LeafCat#4744</TransactionDetailValue1>
             <TransactionDetailValue2>
-              Connect your wallet first
+              {connected
+                ? truncateAddress(account?.address)
+                : 'Connect your wallet first'}
             </TransactionDetailValue2>
           </Row>
           <Row>
@@ -255,15 +307,24 @@ export default function Coin() {
           </Row>
           <Row>
             <TransactionDetailKey>Value</TransactionDetailKey>
-            <TransactionDetailValue1>{15.5} APT</TransactionDetailValue1>
+            <TransactionDetailValue1>{amount} APT</TransactionDetailValue1>
             <TransactionDetailValue2>
-              Connect your wallet first
+              {connected
+                ? `${Number(userBalance).toLocaleString('en-US', {
+                    maximumFractionDigits: 4,
+                  })} APT`
+                : 'Connect your wallet first'}
             </TransactionDetailValue2>
           </Row>
         </Column>
         <Column style={{ marginTop: 'auto' }}>
-          <InteractionButton>Connect Aptos Wallet</InteractionButton>
-          <InteractionButton disabled={true}>Send</InteractionButton>
+          <WalletSelector />
+          <InteractionButton
+            disabled={!connected}
+            onClick={onSignAndSubmitTransaction}
+          >
+            Send
+          </InteractionButton>
         </Column>
       </TransactionBox>
       {/* 
@@ -279,6 +340,8 @@ export default function Coin() {
           onClose={() => {
             setModalShow(false);
           }}
+          userBalance={userBalance}
+          setAmount={setAmount}
         ></AptosCoinModal>
       )}
     </ContentContainer>
