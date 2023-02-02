@@ -20,6 +20,9 @@ const nextConfig = {
       },
     ];
   },
+  images: {
+    domains: ['www.topaz.so', 'cdn.discordapp.com'],
+  },
 };
 
 module.exports = nextConfig;

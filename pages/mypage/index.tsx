@@ -12,6 +12,7 @@ import TwitterIcon from '@/public/icons/Twitter.svg';
 import { SignMessagePayload } from '@aptos-labs/wallet-adapter-core';
 import { SignMessageResponse } from '@aptos-labs/wallet-adapter-core';
 import { AddWalletModal } from '@/components/Common/Modal';
+import DiscordClient from '@/lib/discord';
 enum Networks {
   aptos = 'APTOS',
 }
@@ -260,6 +261,9 @@ export default function MyPage() {
     Boolean(autoVerify),
   );
   const [autoVeifyState, setAutoVerifyState] = useState(autoVerify);
+
+  const [userData, setUserData] = useState<any>();
+
   const walletContext = useWallet();
 
   const {
@@ -275,13 +279,19 @@ export default function MyPage() {
   } = walletContext;
 
   const client = new Client(walletContext);
+  const discordClient = new DiscordClient();
 
-  const fetchUserData = async (fromId: string) => {
-    // getSomethingHere
+  const fetchUserData = async () => {
+    // getSomethingHere,
+    // console.log(String(fromId));
+    const res = await discordClient.fetchuserInfo(String(fromId));
+    console.log(res);
+    setUserData(res);
   };
+
   useEffect(() => {
-    fetchUserData(String(fromId));
-  }, []);
+    if (fromId) fetchUserData();
+  }, [fromId]);
 
   useEffect(() => {
     //TODO display
@@ -317,7 +327,7 @@ export default function MyPage() {
           <Image
             width={200}
             height={200}
-            src={ProfileImage}
+            src={userData?.avatar}
             alt="Profile Image"
           ></Image>
           <Column>
@@ -344,7 +354,7 @@ export default function MyPage() {
                 lineHeight: '36px',
               }}
             >
-              LeafCat
+              {userData?.name}
             </Title>
           </Column>
         </Row>
@@ -360,14 +370,19 @@ export default function MyPage() {
             <DetailTitle>Discord</DetailTitle>
             <DiscordButton>
               <DiscordIcon />
-              <SocialHandle>LeafCat#4774</SocialHandle>
+              <SocialHandle>
+                {' '}
+                {userData?.name + '#' + userData?.discriminator}
+              </SocialHandle>
             </DiscordButton>
           </SocialBox>
           <SocialBox>
             <DetailTitle>Twitter</DetailTitle>
             <TwitterButton>
               <TwitterIcon fill="currentColor" />
-              <SocialHandle>@0xleafcat</SocialHandle>
+              <SocialHandle>
+                {userData?.name + '#' + userData?.discriminator}
+              </SocialHandle>
               <DisconnectButton>Disconnect</DisconnectButton>
             </TwitterButton>
           </SocialBox>
@@ -382,7 +397,7 @@ export default function MyPage() {
         <Column>
           <DetailTitle>Aptos</DetailTitle>
 
-          {dummyWallets.map((v, i) => {
+          {userData?.aptosWallets?.map((v, i) => {
             return (
               <WalletAccount address={v.address} network={v.nework} key={i} />
             );

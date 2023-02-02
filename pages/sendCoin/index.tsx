@@ -14,6 +14,7 @@ import { WalletSelector } from '@/components/Aptos/WalletSelector';
 import { useAutoConnect } from '@/components/Aptos/AutoConnectProvider';
 import { truncateAddress } from '@/utils/utils';
 import { AppContext } from '@/components/Aptos/AppContext';
+import DiscordClient from '@/lib/discord';
 interface StaticImageData {
   src: string;
   height: number;
@@ -37,6 +38,7 @@ interface ButtonProps {
 }
 
 const ContentContainer = styled.div`
+  min-height: calc(100vh - 200px);
   width: 440px;
   margin: 40px auto;
   align-items: center;
@@ -228,7 +230,6 @@ export default function SendCoin() {
     amount: queryAmount = '0',
     fromId,
     toId,
-    toAddress,
   } = router.query;
 
   const [modalShow, setModalShow] = useState<boolean>(false);
@@ -252,12 +253,23 @@ export default function SendCoin() {
 
   const [amount, setAmount] = useState(String(queryAmount));
   const [userBalance, setUserBalance] = useState('0');
+
+  const [userData, setUserData] = useState<any>();
+  const [receiverData, setReceiverData] = useState<any>();
+
+  const [fromName, setFromName] = useState('');
+  const [fromImg, setFromImg] = useState('');
+
+  const [toName, setToName] = useState('');
+  const [toImg, setToImg] = useState('');
+  const [toAddress, setToAddress] = useState('');
   // const [toAddress, setToAddress] = useState('');
 
   const client = new Client(walletContext);
+  const discordClient = new DiscordClient();
 
   const onSignAndSubmitTransaction = async () => {
-    const res = await client.transferApt(
+    const res = await client.registerAndTransferCoin(
       amount,
       //TODO amount
       '0xb30d58ea44961e0d004fa0d7df0459eb2cacfbbe32545dce923048360c518f58',
@@ -269,8 +281,25 @@ export default function SendCoin() {
   };
   const fetchCoins = async () => {
     const coins = await client.fetchCoins();
-    setUserBalance(client.format(coins[0]?.amount.toString(), 8));
+    if (coins == undefined) return;
+    if (coins?.balances == undefined) return;
+    if (coins?.balances[0] == undefined) return;
+    if (coins?.balances[0].value == undefined) return;
+    setUserBalance(client.format(coins?.balances[0]?.value, 8));
   };
+
+  const fetchUserData = async () => {
+    // getSomethingHere,
+    // console.log(String(fromId));
+    const res1 = await discordClient.fetchuserInfo(String(fromId));
+    const res2 = await discordClient.fetchuserInfo(String(toId));
+    setUserData(res1);
+    setReceiverData(res2);
+  };
+
+  useEffect(() => {
+    if (fromId && toId) fetchUserData();
+  }, [fromId, toId]);
 
   useEffect(() => {
     console.log(walletContext);
@@ -287,7 +316,9 @@ export default function SendCoin() {
       <Title>Send Token(coin)</Title>
 
       <SummaryBox>
-        <Profile imgSource={sendProfile1}>{String(fromId)}</Profile>
+        <Profile imgSource={userData?.avatar}>
+          {userData?.name + '#' + userData?.discriminator}
+        </Profile>
         <DottedLine />
         <Balance
           onClick={() => {
@@ -295,7 +326,9 @@ export default function SendCoin() {
           }}
         ></Balance>
         <DottedLine />
-        <Profile imgSource={sendProfile2}>{String(toId)}</Profile>
+        <Profile imgSource={receiverData?.avatar}>
+          {receiverData?.name + '#' + receiverData?.discriminator}
+        </Profile>{' '}
       </SummaryBox>
 
       <TransactionBox>
@@ -303,7 +336,7 @@ export default function SendCoin() {
         <Column>
           <Row>
             <TransactionDetailKey>From</TransactionDetailKey>
-            <TransactionDetailValue1>{String(fromId)}</TransactionDetailValue1>
+            <TransactionDetailValue1>{fromName}</TransactionDetailValue1>
             <TransactionDetailValue2>
               {connected
                 ? truncateAddress(account?.address)
@@ -312,9 +345,9 @@ export default function SendCoin() {
           </Row>
           <Row>
             <TransactionDetailKey>To</TransactionDetailKey>
-            <TransactionDetailValue1>{String(toId)}</TransactionDetailValue1>
+            <TransactionDetailValue1>{toName}</TransactionDetailValue1>
             <TransactionDetailValue2>
-              {truncateAddress(String(toAddress))}
+              {truncateAddress(receiverData?.aptosWallets[0])}
             </TransactionDetailValue2>
           </Row>
           <Row>

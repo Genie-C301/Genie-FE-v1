@@ -2,7 +2,7 @@ import React, { ReactNode, useContext, useEffect, useState } from 'react';
 import Link from 'next/link';
 
 import styled from 'styled-components';
-import { Portal, Row, RowDivider } from '@/components/Common';
+import { Column, Portal, Row, RowDivider } from '@/components/Common';
 import CoinAptos from '@/public/icons/AptosTicker.svg';
 import AngleDown from '@/public/icons/AngleDown.svg';
 
@@ -10,6 +10,8 @@ import { useWallet } from '@aptos-labs/wallet-adapter-react';
 import Client from '@/lib/aptos';
 import { truncateAddress } from '@/utils/utils';
 import { WalletSelector } from '@/components/Aptos/WalletSelector';
+import Image from 'next/image';
+import DiscordClient from '@/lib/discord';
 interface ButtonProps {
   disabled?: boolean;
 }
@@ -31,6 +33,12 @@ interface AptosCoinModalProps {
   onClose: () => void;
   setAmount: (arg0: string) => void;
   userBalance: string;
+}
+
+interface AptosTokenModalProps {
+  onClose: () => void;
+  setToken: (arg0: string) => void;
+  userAddress: string;
 }
 
 interface AddWalletModalProps {
@@ -258,6 +266,136 @@ export const AptosCoinModal: React.FC<AptosCoinModalProps> = ({
   );
 };
 
+const TokenImage = styled.div`
+  width: 40px;
+  height: 40px;
+  border-radius: 20px;
+  overflow: hidden;
+`;
+
+const TokenText = styled.div`
+  font-weight: 700;
+  font-size: 14px;
+  line-height: 20px;
+  /* identical to box height, or 143% */
+  text-align: left;
+  width: 100%;
+  color: #000000;
+`;
+
+const TokenRow = ({
+  collection,
+  name,
+  uri,
+  selected,
+  onClick = () => {},
+}: any) => {
+  return (
+    <Row
+      style={{
+        width: '100%',
+        borderRadius: '4px',
+
+        padding: '8px 12px',
+        gap: '12px',
+        cursor: 'pointer',
+        background: `${selected ? '#5200FF' : 'white'}`,
+        border: `${selected ? '1px solid #5200FF' : 'none'}`,
+      }}
+      onClick={onClick}
+    >
+      <TokenImage>
+        <Image width={40} height={40} src={uri} alt="Token Image"></Image>
+      </TokenImage>
+      <Column
+        style={{
+          alignItems: 'left',
+          gap: 'auto',
+        }}
+      >
+        <TokenText>{name}</TokenText>
+        <TokenText>{collection}</TokenText>
+      </Column>
+    </Row>
+  );
+};
+
+export const AptosTokenModal: React.FC<AptosTokenModalProps> = ({
+  onClose,
+  setToken,
+}) => {
+  const [selectedToken, setSelectedToken] = useState<number | null>();
+
+  const [tokens, setTokens] = useState<any[]>([]);
+
+  const walletContext = useWallet();
+
+  const {
+    connected,
+    disconnect,
+    account,
+    network,
+    wallet,
+    signAndSubmitTransaction,
+    signTransaction,
+    signMessage,
+    signMessageAndVerify,
+  } = walletContext;
+
+  const client = new Client(walletContext);
+
+  const fetchTokens = async () => {
+    const res = await client.fetchTokens();
+
+    console.log(res);
+    setTokens(res);
+  };
+
+  useEffect(() => {
+    fetchTokens();
+  }, []);
+
+  return (
+    <Modal onClose={onClose}>
+      <ModalTitle>Select NFT</ModalTitle>
+      <RowDivider />
+      <Column
+        style={{
+          width: '100%',
+        }}
+      >
+        {tokens.map((v, i) => (
+          <TokenRow
+            collection={v.collection}
+            name={v.name}
+            uri={v.uri}
+            selected={i == selectedToken}
+            key={i}
+            onClick={() => {
+              setSelectedToken(i);
+            }}
+          ></TokenRow>
+        ))}
+      </Column>
+      <Row>
+        <CoinButton onClick={onClose}>Cancel</CoinButton>
+        <CoinButton
+          style={{
+            background: '#5200ff',
+            color: 'white',
+          }}
+          onClick={() => {
+            setToken(tokens[Number(selectedToken)]);
+            onClose();
+          }}
+        >
+          Select NFT
+        </CoinButton>
+      </Row>
+    </Modal>
+  );
+};
+
 export const AddWalletModal: React.FC<AddWalletModalProps> = ({
   onClose,
   fromId,
@@ -268,9 +406,27 @@ export const AddWalletModal: React.FC<AddWalletModalProps> = ({
     walletContext;
 
   const client = new Client(walletContext);
+  const discordClient = new DiscordClient();
+
+  const verifyUser = async () => {
+    if (account == null) return;
+    // getSomethingHere,
+    // console.log(String(fromId));
+    const res = await discordClient.verifyUser(
+      String(fromId),
+      account?.address,
+    );
+    console.log(res);
+    // setUserData(res);
+  };
 
   return (
-    <Modal onClose={onClose}>
+    <Modal
+      onClose={() => {
+        verifyUser();
+        onClose();
+      }}
+    >
       <ModalTitle>Add Wallet</ModalTitle>
       <Row></Row>
       <CoinText>
@@ -294,6 +450,7 @@ export const AddWalletModal: React.FC<AddWalletModalProps> = ({
               application: true,
               chainId: true,
             });
+            verifyUser();
             alert('Signed Message \n' + JSON.stringify(signResponse));
             onClose();
           }}
