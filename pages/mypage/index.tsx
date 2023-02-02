@@ -330,7 +330,7 @@ export default function MyPage() {
                 textAlign: 'left',
               }}
             >
-              {'대표 월렛 아이디 from B/E'}
+              {'Abstract Wallet from Aptos'}
             </Title>
             <Row>
               <DetailTitle>UserName</DetailTitle>
@@ -376,7 +376,7 @@ export default function MyPage() {
       <Column>
         <Divider />
         <Row>
-          <SectionTitle>Wallets </SectionTitle>
+          <SectionTitle>Manager Wallets </SectionTitle>
           <SectionDesc>Connect or disconnect your wallets</SectionDesc>
         </Row>
         <Column>
@@ -394,7 +394,7 @@ export default function MyPage() {
               setShowAddWalletModal(true);
             }}
           >
-            + Add New Wallet
+            + Add New Manager Wallet
           </AddWalletButton>
         </Column>
       </Column>
