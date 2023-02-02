@@ -1,11 +1,11 @@
 import styled from 'styled-components';
 import { useWallet } from '@aptos-labs/wallet-adapter-react';
 import { useEffect, useMemo, useState } from 'react';
+import { useRouter } from 'next/router';
 import { WalletSelector } from '@/components/Aptos/WalletSelector';
 import { Column, Row, RowDivider } from '@/components/Common';
 import { truncateAddress } from '@/utils/utils';
 import Client from '@/lib/aptos';
-import { useRouter } from 'next/router';
 import { InboxCardCoin, InboxCardToken } from '@/components/Common/InboxCard';
 const ContentContainer = styled.div`
   min-height: calc(100vh - 200px);

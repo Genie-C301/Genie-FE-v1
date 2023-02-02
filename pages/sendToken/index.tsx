@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react';
 import dynamic from 'next/dynamic';
 import { useWallet } from '@aptos-labs/wallet-adapter-react';
 import { AptosClient, Types } from 'aptos';
+import { useRouter } from 'next/router';
 import Client from '@/lib/aptos';
 import sendProfile1 from '@/public/images/sendProfile1.png';
 import sendProfile2 from '@/public/images/sendProfile2.png';
@@ -13,7 +14,6 @@ import { WalletSelector } from '@/components/Aptos/WalletSelector';
 import { useAutoConnect } from '@/components/Aptos/AutoConnectProvider';
 import { truncateAddress } from '@/utils/utils';
 import { AppContext } from '@/components/Aptos/AppContext';
-import { useRouter } from 'next/router';
 import DiscordClient from '@/lib/discord';
 interface StaticImageData {
   src: string;

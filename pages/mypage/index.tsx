@@ -3,14 +3,14 @@ import Image from 'next/image';
 import { useRouter } from 'next/router';
 import { useEffect, useState } from 'react';
 import { useWallet } from '@aptos-labs/wallet-adapter-react';
+import { SignMessagePayload } from '@aptos-labs/wallet-adapter-core';
+import { SignMessageResponse } from '@aptos-labs/wallet-adapter-core';
 import { truncateAddress } from '@/utils/utils';
 import Client from '@/lib/aptos';
 import ProfileImage from '@/public/images/ProfileImg.png';
 import Aptos from '@/public/icons/Aptos.svg';
 import DiscordIcon from '@/public/icons/Discord.svg';
 import TwitterIcon from '@/public/icons/Twitter.svg';
-import { SignMessagePayload } from '@aptos-labs/wallet-adapter-core';
-import { SignMessageResponse } from '@aptos-labs/wallet-adapter-core';
 import { AddWalletModal } from '@/components/Common/Modal';
 import DiscordClient from '@/lib/discord';
 enum Networks {
@@ -397,11 +397,14 @@ export default function MyPage() {
         <Column>
           <DetailTitle>Aptos</DetailTitle>
 
-          {userData?.aptosWallets?.map((v, i) => {
-            return (
-              <WalletAccount address={v.address} network={v.nework} key={i} />
-            );
-          })}
+          {
+            // @ts-ignore
+            userData?.aptosWallets?.map((v, i) => {
+              return (
+                <WalletAccount address={v.address} network={v.nework} key={i} />
+              );
+            })
+          }
           <AddWalletButton
             onClick={() => {
               console.log('show modal');

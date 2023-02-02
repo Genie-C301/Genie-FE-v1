@@ -1,10 +1,10 @@
 import styled, { useTheme } from 'styled-components';
 import { useState } from 'react';
 import Link from 'next/link';
+import { useRouter } from 'next/router';
 import GenieLogo from '@/public/images/GenieLogo.svg';
 
 import { Profile } from '@/components/Layout/Profile';
-import { useRouter } from 'next/router';
 interface HeaderProps {}
 
 const HeaderContainer = styled.div`

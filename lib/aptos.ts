@@ -1,12 +1,12 @@
 import {
   AptosClient as Aptos,
-  Types,
-  HexString,
   AptosAccount,
-  TokenClient,
-  FaucetClient,
-  TxnBuilderTypes,
   BCS,
+  FaucetClient,
+  HexString,
+  TokenClient,
+  TxnBuilderTypes,
+  Types,
 } from 'aptos';
 import {
   AccountInfo,

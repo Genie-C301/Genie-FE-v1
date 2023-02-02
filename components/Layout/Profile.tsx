@@ -2,13 +2,13 @@ import styled, { useTheme } from 'styled-components';
 import { useContext, useState } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
+import { useRouter } from 'next/router';
+import { useEffect } from 'react';
 import DiscordIcon from '@/public/icons/Discord.svg';
 import ProfileImage from '@/public/images/ProfileImg.png';
 import UserIcon from '@/public/icons/User.svg';
 import LogoutIcon from '@/public/icons/Logout.svg';
-import { useRouter } from 'next/router';
 import DiscordClient from '@/lib/discord';
-import { useEffect } from 'react';
 
 interface ProfileProps {}
 

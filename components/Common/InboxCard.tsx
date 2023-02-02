@@ -1,10 +1,10 @@
 import styled from 'styled-components';
 import Image from 'next/image';
+import { useWallet } from '@aptos-labs/wallet-adapter-react';
+import { useEffect, useState } from 'react';
 import AptosInbox from '@/public/images/AptosInbox.png';
 import { Column, Row } from '@/components/Common/Flex';
-import { useWallet } from '@aptos-labs/wallet-adapter-react';
 import Client from '@/lib/aptos';
-import { useEffect, useState } from 'react';
 interface InboxCardProps {}
 
 interface InboxCardTokenProps {

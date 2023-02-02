@@ -2,15 +2,15 @@ import React, { ReactNode, useContext, useEffect, useState } from 'react';
 import Link from 'next/link';
 
 import styled from 'styled-components';
+import { useWallet } from '@aptos-labs/wallet-adapter-react';
+import Image from 'next/image';
 import { Column, Portal, Row, RowDivider } from '@/components/Common';
 import CoinAptos from '@/public/icons/AptosTicker.svg';
 import AngleDown from '@/public/icons/AngleDown.svg';
 
-import { useWallet } from '@aptos-labs/wallet-adapter-react';
 import Client from '@/lib/aptos';
 import { truncateAddress } from '@/utils/utils';
 import { WalletSelector } from '@/components/Aptos/WalletSelector';
-import Image from 'next/image';
 import DiscordClient from '@/lib/discord';
 interface ButtonProps {
   disabled?: boolean;
