@@ -1,7 +1,7 @@
 import styled from 'styled-components';
 import Image from 'next/image';
 import { useRouter } from 'next/router';
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { useWallet } from '@aptos-labs/wallet-adapter-react';
 import { truncateAddress } from '@/utils/utils';
 import Client from '@/lib/aptos';
@@ -9,19 +9,21 @@ import ProfileImage from '@/public/images/ProfileImg.png';
 import Aptos from '@/public/icons/Aptos.svg';
 import DiscordIcon from '@/public/icons/Discord.svg';
 import TwitterIcon from '@/public/icons/Twitter.svg';
-
+import { SignMessagePayload } from '@aptos-labs/wallet-adapter-core';
+import { SignMessageResponse } from '@aptos-labs/wallet-adapter-core';
+import { AddWalletModal } from '@/components/Common/Modal';
 enum Networks {
   aptos = 'APTOS',
 }
 
 interface WalletAccountProps {
-  isReceiveWallet: boolean;
   address: string;
   network: string;
 }
 
 const ContentContainer = styled.div`
   width: 920px;
+  min-height: calc(100vh - 200px);
   margin: 40px auto;
   align-items: center;
 
@@ -199,19 +201,33 @@ const ReceiveSelector = styled.div`
   text-align: left;
 `;
 
-function WalletAccount({
-  isReceiveWallet,
-  address,
-  network,
-}: WalletAccountProps) {
+const AddWalletButton = styled.button`
+  align-items: center;
+  padding: 8px 12px;
+
+  font-weight: 700;
+  font-size: 20px;
+  line-height: 28px;
+
+  width: 920px;
+  height: 44px;
+
+  background: #a1a1a1;
+  color: #000000;
+  border-radius: 8px;
+
+  cursor: pointer;
+`;
+
+function WalletAccount({ address, network }: WalletAccountProps) {
   return (
     <WalletInfo>
       <Aptos />
       <WalletAddress>{truncateAddress(address)}</WalletAddress>
-      {isReceiveWallet && <ReceiveSelector>Receive Wallet</ReceiveSelector>}
+      {/* {isReceiveWallet && <ReceiveSelector>Receive Wallet</ReceiveSelector>}
       {!isReceiveWallet && (
         <DisconnectButton>Set Receive Wallet</DisconnectButton>
-      )}
+      )} */}
       <DisconnectButton>Disconnect</DisconnectButton>
     </WalletInfo>
   );
@@ -219,22 +235,18 @@ function WalletAccount({
 
 const dummyWallets = [
   {
-    isReceiveWallet: false,
     address: '0x5df5...e75b8e',
     nework: Networks.aptos,
   },
   {
-    isReceiveWallet: true,
     address: '0x4c87...f8a5ol',
     nework: Networks.aptos,
   },
   {
-    isReceiveWallet: false,
     address: '0x5df5...e75b8e',
     nework: Networks.aptos,
   },
   {
-    isReceiveWallet: false,
     address: '0x5df5...e75b8e',
     nework: Networks.aptos,
   },
@@ -242,8 +254,12 @@ const dummyWallets = [
 
 export default function MyPage() {
   const router = useRouter();
-  const { fromId, autoVerify } = router.query;
+  const { fromId, autoVerify = false } = router.query;
 
+  const [showAddWalletModal, setShowAddWalletModal] = useState(
+    Boolean(autoVerify),
+  );
+  const [autoVeifyState, setAutoVerifyState] = useState(autoVerify);
   const walletContext = useWallet();
 
   const {
@@ -269,7 +285,15 @@ export default function MyPage() {
 
   useEffect(() => {
     //TODO display
-    if (connected) {
+    if (connected && autoVerify) {
+      const signResponse = signMessage({
+        nonce: '0',
+        message: 'Genie Wallet Verify',
+        address: true,
+        application: true,
+        chainId: true,
+      });
+      console.log(signResponse);
     }
   }, [autoVerify]);
 
@@ -283,21 +307,47 @@ export default function MyPage() {
           <SectionTitle>User Information</SectionTitle>
           <SectionDesc>Personalize your informations</SectionDesc>
         </Row>
+        <Column>
+          <Row>
+            <DetailTitle>PFP</DetailTitle>
+            <DetailDesc>Your PFP image</DetailDesc>
+          </Row>
+        </Column>
         <Row>
-          <DetailTitle>PFP</DetailTitle>
-          <DetailDesc>Your PFP image</DetailDesc>
+          <Image
+            width={200}
+            height={200}
+            src={ProfileImage}
+            alt="Profile Image"
+          ></Image>
+          <Column>
+            <Row>
+              <DetailTitle>Social Layer Account</DetailTitle>
+              <DetailDesc>Your Social Layer Account</DetailDesc>
+            </Row>
+            <Title
+              style={{
+                textAlign: 'left',
+              }}
+            >
+              {'대표 월렛 아이디 from B/E'}
+            </Title>
+            <Row>
+              <DetailTitle>UserName</DetailTitle>
+              <DetailDesc>Your nickname</DetailDesc>
+            </Row>
+            <Title
+              style={{
+                textAlign: 'left',
+                fontWeight: '400',
+                fontSize: '24px',
+                lineHeight: '36px',
+              }}
+            >
+              LeafCat
+            </Title>
+          </Column>
         </Row>
-        <Image
-          width={200}
-          height={200}
-          src={ProfileImage}
-          alt="Profile Image"
-        ></Image>
-        <Row>
-          <DetailTitle>UserName</DetailTitle>
-          <DetailDesc>Your nickname</DetailDesc>
-        </Row>
-        <NicknameContainer>LeafCat</NicknameContainer>
       </Column>
       <Column>
         <Divider />
@@ -331,18 +381,31 @@ export default function MyPage() {
         </Row>
         <Column>
           <DetailTitle>Aptos</DetailTitle>
+
           {dummyWallets.map((v, i) => {
             return (
-              <WalletAccount
-                isReceiveWallet={v.isReceiveWallet}
-                address={v.address}
-                network={v.nework}
-                key={i}
-              />
+              <WalletAccount address={v.address} network={v.nework} key={i} />
             );
           })}
+          <AddWalletButton
+            onClick={() => {
+              console.log('show modal');
+              console.log(showAddWalletModal);
+              setShowAddWalletModal(true);
+            }}
+          >
+            + Add New Wallet
+          </AddWalletButton>
         </Column>
       </Column>
+      {showAddWalletModal && (
+        <AddWalletModal
+          onClose={() => {
+            setShowAddWalletModal(false);
+          }}
+          fromId={String(fromId)}
+        ></AddWalletModal>
+      )}
     </ContentContainer>
   );
 }
