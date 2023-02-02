@@ -5,6 +5,11 @@ import styled from 'styled-components';
 import { Portal, Row, RowDivider } from '@/components/Common';
 import CoinAptos from '@/public/icons/AptosTicker.svg';
 import AngleDown from '@/public/icons/AngleDown.svg';
+
+import { useWallet } from '@aptos-labs/wallet-adapter-react';
+import Client from '@/lib/aptos';
+import { truncateAddress } from '@/utils/utils';
+import { WalletSelector } from '@/components/Aptos/WalletSelector';
 interface ButtonProps {
   disabled?: boolean;
 }
@@ -26,6 +31,11 @@ interface AptosCoinModalProps {
   onClose: () => void;
   setAmount: (arg0: string) => void;
   userBalance: string;
+}
+
+interface AddWalletModalProps {
+  onClose: () => void;
+  fromId: string;
 }
 
 const CoinText = styled.div`
@@ -156,6 +166,29 @@ const CoinButton = styled.button<ButtonProps>`
   color: #000000;
 `;
 
+const AddWalletButton = styled.button<ButtonProps>`
+  width: 175px;
+  height: 40px;
+
+  align-items: center;
+  justify-content: center;
+  padding: 8px 12px;
+  gap: 4px;
+
+  border-radius: 8px;
+
+  cursor: pointer;
+
+  background: #5200ff;
+  color: #ffffff;
+
+  &:disabled {
+    background: #a1a1a1;
+    color: #000000;
+    cursor: not-allowed;
+  }
+`;
+
 function CoinDropdown() {
   return (
     <CoinDropdownStyle>
@@ -220,6 +253,54 @@ export const AptosCoinModal: React.FC<AptosCoinModalProps> = ({
         >
           Change Value
         </CoinButton>
+      </Row>
+    </Modal>
+  );
+};
+
+export const AddWalletModal: React.FC<AddWalletModalProps> = ({
+  onClose,
+  fromId,
+}) => {
+  const walletContext = useWallet();
+
+  const { connected, disconnect, account, network, wallet, signMessage } =
+    walletContext;
+
+  const client = new Client(walletContext);
+
+  return (
+    <Modal onClose={onClose}>
+      <ModalTitle>Add Wallet</ModalTitle>
+      <Row></Row>
+      <CoinText>
+        {connected
+          ? truncateAddress(account?.address)
+          : 'Connect your wallet first'}
+      </CoinText>
+
+      <WalletSelector />
+
+      <RowDivider />
+      <Row>
+        <CoinButton onClick={onClose}>Cancel</CoinButton>
+
+        <AddWalletButton
+          onClick={async () => {
+            const signResponse = await signMessage({
+              nonce: '0',
+              message: 'Genie Wallet Verify',
+              address: true,
+              application: true,
+              chainId: true,
+            });
+            alert('Signed Message \n' + JSON.stringify(signResponse));
+            onClose();
+          }}
+          disabled={!connected}
+        >
+          {!connected ? 'Connect Wallet First' : 'Add Wallet'}
+        </AddWalletButton>
       </Row>
     </Modal>
   );
