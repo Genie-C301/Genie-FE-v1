@@ -272,7 +272,7 @@ export default function SendCoin() {
     const res = await client.registerAndTransferCoin(
       amount,
       //TODO amount
-      '0xb30d58ea44961e0d004fa0d7df0459eb2cacfbbe32545dce923048360c518f58',
+      receiverData.aptosWallets[0].address,
       //TODO toAddress
     );
     console.log(res.msg);
@@ -293,6 +293,7 @@ export default function SendCoin() {
     // console.log(String(fromId));
     const res1 = await discordClient.fetchuserInfo(String(fromId));
     const res2 = await discordClient.fetchuserInfo(String(toId));
+    setAmount(queryAmount);
     setUserData(res1);
     setReceiverData(res2);
   };
@@ -347,7 +348,7 @@ export default function SendCoin() {
             <TransactionDetailKey>To</TransactionDetailKey>
             <TransactionDetailValue1>{toName}</TransactionDetailValue1>
             <TransactionDetailValue2>
-              {truncateAddress(receiverData?.aptosWallets[0])}
+              {truncateAddress(receiverData?.aptosWallets[0].address)}
             </TransactionDetailValue2>
           </Row>
           <Row>

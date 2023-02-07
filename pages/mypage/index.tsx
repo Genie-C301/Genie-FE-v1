@@ -234,25 +234,6 @@ function WalletAccount({ address, network }: WalletAccountProps) {
   );
 }
 
-const dummyWallets = [
-  {
-    address: '0x5df5...e75b8e',
-    nework: Networks.aptos,
-  },
-  {
-    address: '0x4c87...f8a5ol',
-    nework: Networks.aptos,
-  },
-  {
-    address: '0x5df5...e75b8e',
-    nework: Networks.aptos,
-  },
-  {
-    address: '0x5df5...e75b8e',
-    nework: Networks.aptos,
-  },
-];
-
 export default function MyPage() {
   const router = useRouter();
   const { fromId, autoVerify = false } = router.query;
@@ -286,6 +267,7 @@ export default function MyPage() {
     // console.log(String(fromId));
     const res = await discordClient.fetchuserInfo(String(fromId));
     console.log(res);
+    res.aptosWallets = res.aptosWallets.reverse();
     setUserData(res);
   };
 
@@ -340,7 +322,7 @@ export default function MyPage() {
                 textAlign: 'left',
               }}
             >
-              {'Abstract Wallet from Aptos'}
+              {truncateAddress(userData?.aptosWallets[0]?.address)}
             </Title>
             <Row>
               <DetailTitle>UserName</DetailTitle>
@@ -397,14 +379,13 @@ export default function MyPage() {
         <Column>
           <DetailTitle>Aptos</DetailTitle>
 
-          {
+          {userData?.aptosWallets.length > 1 &&
             // @ts-ignore
-            userData?.aptosWallets?.map((v, i) => {
+            userData?.aptosWallets?.slice(1)?.map((v, i) => {
               return (
                 <WalletAccount address={v.address} network={v.nework} key={i} />
               );
-            })
-          }
+            })}
           <AddWalletButton
             onClick={() => {
               console.log('show modal');
@@ -422,6 +403,7 @@ export default function MyPage() {
             setShowAddWalletModal(false);
           }}
           fromId={String(fromId)}
+          address={userData?.aptosWallets[0].address}
         ></AddWalletModal>
       )}
     </ContentContainer>

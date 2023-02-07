@@ -5,9 +5,12 @@ import { useEffect, useState } from 'react';
 import AptosInbox from '@/public/images/AptosInbox.png';
 import { Column, Row } from '@/components/Common/Flex';
 import Client from '@/lib/aptos';
-interface InboxCardProps {}
+interface InboxCardProps {
+  address: string;
+}
 
 interface InboxCardTokenProps {
+  address: string;
   img: string;
   creator: string;
   name: string;
@@ -87,7 +90,9 @@ const InboxClaimButton = styled.button`
   }
 `;
 
-export const InboxCardCoin: React.FC<InboxCardProps> = ({}: InboxCardProps) => {
+export const InboxCardCoin: React.FC<InboxCardProps> = ({
+  address,
+}: InboxCardProps) => {
   const [inboxBalance, setInboxBalance] = useState('');
 
   const walletContext = useWallet();
@@ -105,31 +110,29 @@ export const InboxCardCoin: React.FC<InboxCardProps> = ({}: InboxCardProps) => {
   const client = new Client(walletContext);
 
   const fetchCoins = async () => {
-    if (account == null) return;
-    const coins = await client.fetchCoins(account.address);
+    const coins = await client.fetchCoins(address);
+    console.log(coins);
     if (coins.success == false) return;
     if (coins.balances == undefined) return;
     try {
-      setInboxBalance(client.format(coins.balances[0]?.amount.toString(), 8));
+      setInboxBalance(client.format(coins.balances[0]?.value.toString(), 8));
     } catch (err) {
       setInboxBalance('0');
     }
   };
 
   const claimCoins = async () => {
-    if (account == null) return;
+    // if (account == null) return;
 
-    const res = await client.claimCoin(account.address);
+    const res = await client.claimCoin(address);
 
-    alert(res);
+    alert(res.msg);
   };
 
   useEffect(() => {
     console.log(walletContext);
-    if (wallet) {
-      fetchCoins();
-    }
-  }, [account]);
+    fetchCoins();
+  }, [account, address]);
 
   return (
     <InboxCardContainer>
@@ -156,7 +159,7 @@ export const InboxCardCoin: React.FC<InboxCardProps> = ({}: InboxCardProps) => {
       >
         <Row>
           <Text3>From</Text3>
-          <Text3>@b_loved_deok#0001</Text3>
+          <Text3>Soba | ATIV#3335</Text3>
         </Row>
         <Row>
           <Text3>Date</Text3>
@@ -176,6 +179,7 @@ export const InboxCardCoin: React.FC<InboxCardProps> = ({}: InboxCardProps) => {
 };
 
 export const InboxCardToken: React.FC<InboxCardTokenProps> = ({
+  address,
   img,
   creator,
   name,
@@ -199,15 +203,12 @@ export const InboxCardToken: React.FC<InboxCardTokenProps> = ({
 
   const claimToken = async () => {
     if (account == null) return;
-    const token = await client.claimToken(
-      account.address,
-      creator,
-      collection,
-      name,
-    );
+    const token = await client.claimToken(address, creator, collection, name);
 
     alert(token.msg);
   };
+
+  if (collection === 'Fcollection1') return <></>;
 
   return (
     <InboxCardContainer>
@@ -222,27 +223,29 @@ export const InboxCardToken: React.FC<InboxCardTokenProps> = ({
         <Text1>{name}</Text1>
         <Text2>{collection}</Text2>
       </Column>
-      <Column
-        style={{
-          gap: '0',
-        }}
-      >
-        <Row>
-          <Text3>From</Text3>
-          <Text3>@b_loved_deok#0001</Text3>
-        </Row>
-        <Row>
-          <Text3>Date</Text3>
-          <Text3>35 min ago</Text3>
-        </Row>
-      </Column>
-      <InboxClaimButton
-        onClick={() => {
-          claimToken;
-        }}
-      >
-        Receive this Item
-      </InboxClaimButton>
+      {collection !== 'GENIE' ? (
+        <>
+          <Column
+            style={{
+              gap: '0',
+            }}
+          >
+            <Row>
+              <Text3>From</Text3>
+              <Text3>Soba | ATIV#3335</Text3>
+            </Row>
+            <Row>
+              <Text3>Date</Text3>
+              <Text3>35 min ago</Text3>
+            </Row>
+          </Column>
+          <InboxClaimButton onClick={claimToken}>
+            Receive this Item
+          </InboxClaimButton>
+        </>
+      ) : (
+        <Text1>GENIE SBT</Text1>
+      )}
     </InboxCardContainer>
   );
 };

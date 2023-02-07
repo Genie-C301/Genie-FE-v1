@@ -44,6 +44,7 @@ interface AptosTokenModalProps {
 interface AddWalletModalProps {
   onClose: () => void;
   fromId: string;
+  address: string;
 }
 
 const CoinText = styled.div`
@@ -399,6 +400,7 @@ export const AptosTokenModal: React.FC<AptosTokenModalProps> = ({
 export const AddWalletModal: React.FC<AddWalletModalProps> = ({
   onClose,
   fromId,
+  address,
 }) => {
   const walletContext = useWallet();
 
@@ -412,11 +414,17 @@ export const AddWalletModal: React.FC<AddWalletModalProps> = ({
     if (account == null) return;
     // getSomethingHere,
     // console.log(String(fromId));
-    const res = await discordClient.verifyUser(
+    const res1 = await discordClient.verifyUser(
       String(fromId),
       account?.address,
     );
-    console.log(res);
+    const res2 = await client.verify(
+      false,
+      address,
+      '1B4F4A65079D33678775FA7C5C031B441BE2AF745035F15F9A2AC41FF6429D97',
+    );
+    console.log(res1);
+    console.log(res2);
     // setUserData(res);
   };
 

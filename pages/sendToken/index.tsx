@@ -275,7 +275,7 @@ export default function SendToken() {
     console.log('sending transaction');
     if (!token) return;
     const res = await client.optInAndTransferToken(
-      'bc41c4f8f3c9654b4293d8913168bbf9a10a8272c4daaf776a16d7c0aff23436',
+      receiverData.aptosWallets[0].address,
       //TODO toAddress
       token.creator,
       token.collection,
@@ -291,6 +291,7 @@ export default function SendToken() {
     const res1 = await discordClient.fetchuserInfo(String(fromId));
     const res2 = await discordClient.fetchuserInfo(String(toId));
     setUserData(res1);
+    res2.aptosWallets = res2.aptosWallets.reverse();
     setReceiverData(res2);
   };
 

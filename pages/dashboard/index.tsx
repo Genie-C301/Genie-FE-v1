@@ -6,6 +6,7 @@ import { WalletSelector } from '@/components/Aptos/WalletSelector';
 import { Column, Row, RowDivider } from '@/components/Common';
 import { truncateAddress } from '@/utils/utils';
 import Client from '@/lib/aptos';
+import DiscordClient from '@/lib/discord';
 import { InboxCardCoin, InboxCardToken } from '@/components/Common/InboxCard';
 const ContentContainer = styled.div`
   min-height: calc(100vh - 200px);
@@ -102,6 +103,7 @@ export default function Dashboard() {
 
   const walletContext = useWallet();
 
+  const [userData, setUserData] = useState<any>();
   const [transactions, setTransactions] = useState<Array<any> | null>([]);
   const [tokens, setTokens] = useState<any[]>([]);
 
@@ -118,36 +120,53 @@ export default function Dashboard() {
   } = walletContext;
 
   const client = new Client(walletContext);
+  const discordClient = new DiscordClient();
 
   const fetchTokens = async () => {
-    const res = await client.fetchTokens();
+    if (userData == undefined) return;
+
+    const res = await client.fetchTokens(userData.aptosWallets[0].address);
 
     console.log(res);
     setTokens(res);
   };
 
-  useEffect(() => {
-    fetchTokens();
-  }, []);
-
-  const fetchTxHistory = async () => {
-    const res = await client.accountTransactions();
-
-    if (res.success) {
-      if (res.transactions === undefined) return;
-      setTransactions(res?.transactions);
-
-      console.log(res.transactions);
-    } else {
-      alert(res.err);
-    }
+  const fetchUserData = async () => {
+    if (fromId == null) return;
+    // getSomethingHere,
+    // console.log(String(fromId));
+    const res = await discordClient.fetchuserInfo(String(fromId));
+    res.aptosWallets = res.aptosWallets.reverse();
+    setUserData(res);
   };
 
-  useMemo(() => {
-    if (connected) {
-      fetchTxHistory();
-    }
-  }, [connected, account]);
+  useEffect(() => {
+    fetchTokens();
+    fetchUserData();
+  }, [fromId]);
+
+  useEffect(() => {
+    fetchTokens();
+  }, [userData]);
+
+  // const fetchTxHistory = async () => {
+  //   const res = await client.accountTransactions();
+
+  //   if (res.success) {
+  //     if (res.transactions === undefined) return;
+  //     setTransactions(res?.transactions);
+
+  //     console.log(res.transactions);
+  //   } else {
+  //     alert(res.err);
+  //   }
+  // };
+
+  // useMemo(() => {
+  //   if (connected) {
+  //     fetchTxHistory();
+  //   }
+  // }, [connected, account]);
 
   return (
     <ContentContainer>
@@ -158,7 +177,9 @@ export default function Dashboard() {
           <SmallText>Social Layer Account</SmallText>
           <SectionDesc>Your Social Layer Account</SectionDesc>
         </Row>
-        <AccountText>{truncateAddress(account?.address)}</AccountText>
+        <AccountText>
+          {truncateAddress(userData?.aptosWallets[0].address)}
+        </AccountText>
         <RowDivider />
         {/* <Column style={{ width: '100%' }}>
             <SmallText>
@@ -170,40 +191,31 @@ export default function Dashboard() {
           </Column> */}
       </Column>
 
-      {connected ? (
-        <Column style={{ width: '100%' }}>
-          <Row>
-            <SectionTitle>Your Inbox</SectionTitle>
-            <SectionDesc>Claim NFTs in your Inbox</SectionDesc>
-          </Row>
-          <Row>
-            <InboxCardCoin
-            // address={
-            //   'bc41c4f8f3c9654b4293d8913168bbf9a10a8272c4daaf776a16d7c0aff23436'
-            // }
-            ></InboxCardCoin>
-            {tokens.map((v, i) => (
-              <InboxCardToken
-                img={v.uri}
-                creator={v.creator}
-                name={v.name}
-                collection={v.collection}
-                key={i}
-              ></InboxCardToken>
-            ))}
-          </Row>
-          <RowDivider />
-        </Column>
-      ) : (
-        <Column style={{ width: '100%' }}>
-          <SmallText>
-            Connect wallet to check your Inbox & Transaction Histories
-          </SmallText>
-          <WalletSelector />
-        </Column>
-      )}
-
       <Column style={{ width: '100%' }}>
+        <Row>
+          <SectionTitle>Your Inbox</SectionTitle>
+          <SectionDesc>Claim NFTs in your Inbox</SectionDesc>
+        </Row>
+        <Row>
+          <InboxCardCoin
+            address={userData?.aptosWallets[0].address}
+          ></InboxCardCoin>
+          {tokens.map((v, i) => (
+            <InboxCardToken
+              address={userData?.aptosWallets[0].address}
+              img={v.uri}
+              creator={v.creator}
+              name={v.name}
+              collection={v.collection}
+              key={i}
+            ></InboxCardToken>
+          ))}
+        </Row>
+        <RowDivider />
+      </Column>
+      <WalletSelector />
+
+      {/* <Column style={{ width: '100%' }}>
         <Row>
           <SectionTitle>Transaction History</SectionTitle>
           <SectionDesc>Your Transaction History</SectionDesc>
@@ -217,7 +229,7 @@ export default function Dashboard() {
           <Text>View in Explorer</Text>
         </Row>
         <TxRow></TxRow>
-      </Column>
+      </Column> */}
     </ContentContainer>
   );
 }

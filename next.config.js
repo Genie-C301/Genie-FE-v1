@@ -21,7 +21,7 @@ const nextConfig = {
     ];
   },
   images: {
-    domains: ['www.topaz.so', 'cdn.discordapp.com'],
+    domains: ['www.topaz.so', 'cdn.discordapp.com', 'arweave.net'],
   },
 };
 
